@@ -56,17 +56,54 @@ bot.train("Any string of text you want to add to the Markov chain.")
 print(bot.reply("hello"))
 ```
 
+## Image generation
+
+HolyGPT also ships with `holygpt.imagegen`: a no-dependency, pure-stdlib
+image generator (low-quality on purpose, no models, no APIs). Output is
+real PNG, encoded by hand using `zlib` and `struct`.
+
+```bash
+# Wolfram elementary cellular automaton (1-bit PNG)
+python -m holygpt.imagegen wolfram --rule 30 --width 257 --height 128 -o rule30.png
+python -m holygpt.imagegen wolfram --rule 90 -o sierpinski.png
+
+# Conway's Game of Life snapshot
+python -m holygpt.imagegen life --steps 60 --density 0.3 --seed 7 -o life.png
+
+# Random walk (drunkard's walk)
+python -m holygpt.imagegen walk --steps 80000 --seed 3 -o walk.png
+
+# Grayscale fractal value noise
+python -m holygpt.imagegen noise --octaves 5 --seed 1 -o noise.png
+```
+
+Built-in generators:
+- `automata.wolfram_1d` -- 1D elementary CA, 256 rules. Try 30, 90, 110, 184.
+- `automata.game_of_life` -- Conway's Game of Life snapshot.
+- `automata.random_walk` -- dendritic random-walk traces.
+- `noise.value_noise` -- multi-octave value noise, cloud-like grayscale.
+
+I/O:
+- `png.write_binary_png` -- 1-bit PNG (truly binary, very tiny files).
+- `png.write_grayscale_png` -- 8-bit grayscale PNG.
+
 ## Project layout
 
 ```
 holygpt/
   __init__.py    # public API
-  __main__.py    # CLI entry point (python -m holygpt)
-  bot.py         # HolyGPT class, ties the layers together
+  __main__.py    # chatbot CLI (python -m holygpt)
+  bot.py         # HolyGPT class, ties the chat layers together
   intents.py     # math / time / date / identity handlers
   eliza.py       # regex pattern matcher with pronoun reflection
   markov.py      # n-gram word-level Markov chain
   corpus.txt     # small default training corpus
+  imagegen/
+    __init__.py
+    __main__.py  # image-gen CLI (python -m holygpt.imagegen)
+    png.py       # minimal PNG encoder (stdlib only)
+    automata.py  # wolfram_1d, game_of_life, random_walk
+    noise.py     # value_noise
 ```
 
 ## How the layers fit together
