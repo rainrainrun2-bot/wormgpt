@@ -80,3 +80,31 @@ def write_grayscale_png(
     Path(path).write_bytes(
         _SIGNATURE + _chunk(b"IHDR", ihdr) + _chunk(b"IDAT", idat) + _chunk(b"IEND", b"")
     )
+
+
+def write_rgba_png(
+    path: str | Path,
+    pixels: Sequence[Sequence[int]],
+    width: int,
+    height: int,
+) -> None:
+    """Write an 8-bit RGBA PNG. ``pixels`` is a flat sequence of (r,g,b,a) tuples."""
+    if len(pixels) != width * height:
+        raise ValueError(f"expected {width * height} pixels, got {len(pixels)}")
+
+    raw = bytearray()
+    for y in range(height):
+        raw.append(0)  # filter type "None"
+        for x in range(width):
+            r, g, b, a = pixels[y * width + x]
+            raw.append(r)
+            raw.append(g)
+            raw.append(b)
+            raw.append(a)
+
+    # IHDR: bit_depth=8, color_type=6 (RGBA)
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    idat = zlib.compress(bytes(raw), 9)
+    Path(path).write_bytes(
+        _SIGNATURE + _chunk(b"IHDR", ihdr) + _chunk(b"IDAT", idat) + _chunk(b"IEND", b"")
+    )

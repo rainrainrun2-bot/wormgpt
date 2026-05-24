@@ -5,6 +5,7 @@ Usage examples:
   python -m holygpt.imagegen life --width 128 --height 128 --steps 60 -o life.png
   python -m holygpt.imagegen walk --width 256 --height 256 --steps 80000 -o walk.png
   python -m holygpt.imagegen noise --width 256 --height 256 --octaves 5 -o noise.png
+  python -m holygpt.imagegen text2img "blue dragon with wings" -o dragon.png
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import automata, noise as noise_mod, png
+from . import automata, noise as noise_mod, png, text2img
 
 
 def _add_size(p: argparse.ArgumentParser, default_w: int, default_h: int) -> None:
@@ -45,6 +46,13 @@ def main(argv: list[str] | None = None) -> int:
     p_noise.add_argument("--persistence", type=float, default=0.5)
     _add_size(p_noise, 256, 256)
 
+    p_t2i = sub.add_parser(
+        "text2img",
+        help="Procedural sprite from a text prompt (RGBA PNG)",
+    )
+    p_t2i.add_argument("prompt", help='e.g. "blue dragon with red eyes"')
+    _add_size(p_t2i, 128, 128)
+
     args = parser.parse_args(argv)
 
     if args.cmd == "wolfram":
@@ -68,6 +76,17 @@ def main(argv: list[str] | None = None) -> int:
             args.seed,
         )
         png.write_grayscale_png(args.out, pixels, args.width, args.height)
+    elif args.cmd == "text2img":
+        pixels, params = text2img.generate(
+            args.prompt, args.width, args.height, args.seed
+        )
+        png.write_rgba_png(args.out, pixels, args.width, args.height)
+        print(
+            f"  prompt: {args.prompt!r}\n"
+            f"  parsed: template={params['template']}, "
+            f"palette={params['palette']}, features={params['features']}",
+            file=sys.stderr,
+        )
     else:  # pragma: no cover
         parser.error(f"unknown command {args.cmd!r}")
 

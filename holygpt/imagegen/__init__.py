@@ -11,6 +11,14 @@ I/O:
 - ``png.write_grayscale_png`` -> 8-bit grayscale PNG
 """
 
-from . import automata, noise, png
+from . import automata, noise, palettes, png, shapes, templates, text2img
 
-__all__ = ["automata", "noise", "png"]
+__all__ = [
+    "automata",
+    "noise",
+    "palettes",
+    "png",
+    "shapes",
+    "templates",
+    "text2img",
+]
